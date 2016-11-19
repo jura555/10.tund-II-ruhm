@@ -2,8 +2,8 @@
 	
 	require("../functions.php");
 	
-	require("../class/Car.class.php");
-	$Car = new Car($mysqli);
+	require("../class/Huvi.class.php");
+	$huvi = new huvi($mysqli);
 	
 	//kui ei ole kasutaja id'd
 	if (!isset($_SESSION["userId"])){
@@ -31,13 +31,15 @@
 	}
 	
 	
-	if ( isset($_POST["plate"]) && 
-		isset($_POST["plate"]) && 
-		!empty($_POST["color"]) && 
-		!empty($_POST["color"])
+	if ( isset($_POST["activity"]) && 
+		isset($_POST["activity"]) && 
+		isset($_POST["time"]) &&
+		!empty($_POST["day"]) && 
+		!empty($_POST["day"]) &&
+		!empty($_POST["time"])
 	  ) {
 		  
-		$Car->save($Helper->cleanInput($_POST["plate"]), $Helper->cleanInput($_POST["color"]));
+		$huvi->save($Helper->cleanInput($_POST["activity"]), $Helper->cleanInput($_POST["day"]), $Helper->cleanInput($_POST["time"]));
 		
 	}
 	
@@ -56,11 +58,11 @@
 		
 		$q = $Helper->cleanInput($_GET["q"]);
 		
-		$carData = $Car->get($q, $sort, $direction);
+		$huviData = $huvi->get($q, $sort, $direction);
 	
 	} else {
 		$q = "";
-		$carData = $Car->get($q, $sort, $direction);
+		$huviData = $huvi->get($q, $sort, $direction);
 	
 	}
 	
@@ -73,7 +75,7 @@
 
 
 
-<h1>Data</h1>
+<h1>Treningute soovid</h1>
 <?=$msg;?>
 <p>
 	Tere tulemast <a href="user.php"><?=$_SESSION["userEmail"];?>!</a>
@@ -81,23 +83,41 @@
 </p>
 
 
-<h2>Salvesta auto</h2>
+<h2>Pane oma soov</h2>
 <form method="POST">
-	
-	<label>Auto nr</label><br>
-	<input name="plate" type="text">
-	<br><br>
-	
-	<label>Auto värv</label><br>
-	<input type="color" name="color" >
-	<br><br>
-	
-	<input type="submit" value="Salvesta">
-	
-	
+<p>Vali tegevus</p>
+<div class="styled-select">
+   <select name="activity">
+      <option>Korvpall</option>
+      <option>Jalgpall</option>
+	  <option>Jousaal</option>
+   </select>
+</div>
+<p>Vali aeg</p>
+<div class="styled-select">
+   <select name ="time">
+      <option>19:00-21:00</option>
+      <option>17:00-19:00</option>
+	  <option>18:00-20:00</option>
+   </select>
+</div>
+<p>Vali paev</p>
+<div class="styled-select">
+   <select name="day">
+      <option>Esmaspaev</option>
+      <option>Teisipaev</option>
+	  <option>Kolmapaev</option>
+	  <option>Neljapaev</option>
+	  <option>Reede</option>
+	  <option>Laupaev</option>
+	  <option>Puhapaev</option>
+   </select>
+</div>
+<br>
+<input type="submit" value="Submit"><br>
 </form>
 
-<h2>Autod</h2>
+<h2>Soovid</h2>
 
 <form>
 	<input type="search" name="q" value="<?=$q;?>">
@@ -123,28 +143,35 @@
 					</a>
 				</th>";
 		$html .= "<th>
-					<a href='?q=".$q."&sort=plate&direction=".$direction."'>
-						plate
+					<a href='?q=".$q."&sort=activity&direction=".$direction."'>
+						activity
 					</a>
 				</th>";
 		$html .= "<th>
-					<a href='?q=".$q."&sort=color&direction=".$direction."'>
-						color
+					<a href='?q=".$q."&sort=time&direction=".$direction."'>
+						time
+					</a>
+				</th>";
+		$html .= "<th>
+					<a href='?q=".$q."&sort=day&direction=".$direction."'>
+						day
 					</a>
 				</th>";
 	$html .= "</tr>";
 	
 	//iga liikme kohta massiivis
-	foreach($carData as $c){
+	foreach($huviData as $c){
 		// iga auto on $c
 		//echo $c->plate."<br>";
 		
 		$html .= "<tr>";
 			$html .= "<td>".$c->id."</td>";
-			$html .= "<td>".$c->plate."</td>";
-			$html .= "<td style='background-color:".$c->carColor."'>".$c->carColor."</td>";
+			$html .= "<td>".$c->activity."</td>";
+			$html .= "<td>".$c->day."</td>";
+			$html .= "<td>".$c->time."</td>";
+			
 			$html .= "<td><a  href='edit.php?id=".$c->id."glyphicon glyphicon-pencil'>
-			<span class='glyphicon glyphicon-pencil'></span> Muuda
+			<span class='glyphicon glyphicon-pencil'></span> Delete
 			</a></td>";
 			
 		$html .= "</tr>";
@@ -157,14 +184,9 @@
 	
 	$listHtml = "<br><br>";
 	
-	foreach($carData as $c){
-		
-		
-		$listHtml .= "<h1 style='color:".$c->carColor."'>".$c->plate."</h1>";
-		$listHtml .= "<p>color = ".$c->carColor."</p>";
-	}
 	
-	echo $listHtml;
+	
+	
 	
 	
 	
@@ -172,10 +194,4 @@
 ?>
 </div>
 <?php require("../footer.php"); ?>
-<br>
-<br>
-<br>
-<br>
-<br>
-
 
